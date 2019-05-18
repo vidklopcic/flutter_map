@@ -525,9 +525,7 @@ abstract class TileProvider {
     }
     var allOpts = Map<String, String>.from(data)
       ..addAll(options.additionalOptions);
-    String url = util.template(options.urlTemplate, allOpts);
-    print(coords);
-    return url;
+    return util.template(options.urlTemplate, allOpts);
   }
 
   int invertY(int y, int z) {
