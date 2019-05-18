@@ -30,32 +30,34 @@ class TileLayerOptions extends LayerOptions {
   /// If `true`, inverses Y axis numbering for tiles (turn this on for
   /// [TMS](https://en.wikipedia.org/wiki/Tile_Map_Service) services).
   final bool tms;
+  final bool wms;
 
-  /// Size for the tile.
-  /// Default is 256
+  ///Size for the tile.
+  ///Default is 256
   final double tileSize;
 
-  /// The max zoom applicable. In most tile providers goes from 0 to 19.
+  ///Determiantes the max zoom applicable.
+  ///In most tile providers goes from 0 to 19.
   final double maxZoom;
 
   final bool zoomReverse;
   final double zoomOffset;
 
-  /// List of subdomains for the URL.
+  ///List of subdomains for the URL.
   ///
-  /// Example:
+  ///Example:
   ///
-  /// Subdomains = {a,b,c}
+  ///Subdomains = {a,b,c}
   ///
-  /// and the URL is as follows:
+  ///and the URL is as follows:
   ///
-  /// https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+  ///https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
   ///
-  /// then:
+  ///then:
   ///
-  /// https://a.tile.openstreetmap.org/{z}/{x}/{y}.png
-  /// https://b.tile.openstreetmap.org/{z}/{x}/{y}.png
-  /// https://c.tile.openstreetmap.org/{z}/{x}/{y}.png
+  ///https://a.tile.openstreetmap.org/{z}/{x}/{y}.png
+  ///https://b.tile.openstreetmap.org/{z}/{x}/{y}.png
+  ///https://c.tile.openstreetmap.org/{z}/{x}/{y}.png
   final List<String> subdomains;
 
   ///Color shown behind the tiles.
@@ -70,17 +72,17 @@ class TileLayerOptions extends LayerOptions {
   /// AssetTileProvider() Note that it requires the urlTemplate to target
   /// assets, for example:
   ///
-  /// ```dart
-  /// urlTemplate: "assets/map/anholt_osmbright/{z}/{x}/{y}.png",
-  /// ```
+  ///```dart
+  ///urlTemplate: "assets/map/anholt_osmbright/{z}/{x}/{y}.png",
+  ///```
   ///
   /// In order to use images from the filesystem set this option to
   /// FileTileProvider() Note that it requires the urlTemplate to target the
   /// file system, for example:
   ///
-  /// ```dart
-  /// urlTemplate: "/storage/emulated/0/tiles/some_place/{z}/{x}/{y}.png",
-  /// ```
+  ///```dart
+  ///urlTemplate: "/storage/emulated/0/tiles/some_place/{z}/{x}/{y}.png",
+  ///```
   ///
   /// Furthermore you create your custom implementation by subclassing
   /// TileProvider
@@ -106,6 +108,7 @@ class TileLayerOptions extends LayerOptions {
       this.placeholderImage,
       this.tileProvider = const CachedNetworkTileProvider(),
       this.tms = false,
+      this.wms = false,
       rebuild})
       : super(rebuild: rebuild);
 }
@@ -167,7 +170,7 @@ class _TileLayerState extends State<TileLayer> {
   }
 
   void _setView(LatLng center, double zoom) {
-    var tileZoom = _clampZoom(zoom);
+    var tileZoom = _clampZoom(zoom.round().toDouble());
     if (_tileZoom != tileZoom) {
       _tileZoom = tileZoom;
       _updateLevels();
@@ -512,12 +515,19 @@ abstract class TileProvider {
       'z': coords.z.round().toString(),
       's': _getSubdomain(coords, options)
     };
+    int y = coords.y.round();
     if (options.tms) {
-      data['y'] = invertY(coords.y.round(), coords.z.round()).toString();
+      y = invertY(coords.y.round(), coords.z.round());
+      data['y'] = y.toString();
+    }
+    if (options.wms) {
+      data['bbox'] = getWmsBbox(coords.x.round(), y, coords.z.round());
     }
     var allOpts = Map<String, String>.from(data)
       ..addAll(options.additionalOptions);
-    return util.template(options.urlTemplate, allOpts);
+    String url = util.template(options.urlTemplate, allOpts);
+    print(coords);
+    return url;
   }
 
   int invertY(int y, int z) {
@@ -530,6 +540,12 @@ abstract class TileProvider {
     }
     var index = (coords.x + coords.y).round() % options.subdomains.length;
     return options.subdomains[index];
+  }
+
+  String getWmsBbox(int x, int y, int z) {
+    List<double> SW = util.xyzToWms(x, y+1, z);
+    List<double> NE = util.xyzToWms(x + 1, y, z);
+    return "${SW[1]},${SW[0]},${NE[1]},${NE[0]}";
   }
 }
 
