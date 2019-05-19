@@ -37,9 +37,9 @@ String template(String str, Map<String, String> data) {
 }
 
 List<double> xyzToWms(int x, int y, int z) {
-  double n = math.pow(2.0, z.toDouble());
+  double n = math.pow(2.0, z.toDouble().round());
   double lonDeg = x / n * 360.0 - 180.0;
-  double latRad = math.atan(sinh(math.pi * (1 - 2 * y / n)));
+  double latRad = math.atan(sinh(math.pi * (1.0 - 2.0 * y / n)));
   double latDeg = vmath.degrees(latRad);
   return [latDeg, lonDeg];
 }
