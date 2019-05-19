@@ -95,9 +95,14 @@ class TileLayerOptions extends LayerOptions {
   ImageProvider placeholderImage;
   Map<String, String> additionalOptions;
 
+  final double opacity;
+  final TileLayerOptions overlayTileOptions;
+
   TileLayerOptions(
       {this.urlTemplate,
       this.tileSize = 256.0,
+      this.opacity = 1.0,
+      this.overlayTileOptions,
       this.maxZoom = 18.0,
       this.zoomReverse = false,
       this.zoomOffset = 0.0,
@@ -419,6 +424,39 @@ class _TileLayerState extends State<TileLayer> {
     return '${coords.x}:${coords.y}:${coords.z}';
   }
 
+  Widget _getTileImage(Coords coords) {
+    Widget base = FadeInImage(
+      fadeInDuration: const Duration(milliseconds: 100),
+      key: Key(_tileCoordsToKey(coords)),
+      placeholder: options.placeholderImage != null
+          ? options.placeholderImage
+          : MemoryImage(kTransparentImage),
+      image: options.tileProvider.getImage(coords, options),
+      fit: BoxFit.fill,
+    );
+    if (widget.options.overlayTileOptions != null) {
+      return Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          base,
+          Opacity(
+            opacity: options.overlayTileOptions.opacity,
+            child: FadeInImage(
+              fadeInDuration: const Duration(milliseconds: 100),
+              key: Key(_tileCoordsToKey(coords)),
+              placeholder: options.overlayTileOptions.placeholderImage != null
+                  ? options.overlayTileOptions.placeholderImage
+                  : MemoryImage(kTransparentImage),
+              image: options.overlayTileOptions.tileProvider.getImage(coords, options.overlayTileOptions),
+              fit: BoxFit.fill,
+            ),
+          ),
+        ],
+      );
+    }
+    return base;
+  }
+
   Widget _createTileWidget(Coords coords) {
     var tilePos = _getTilePos(coords);
     var level = _levels[coords.z];
@@ -433,15 +471,7 @@ class _TileLayerState extends State<TileLayer> {
       width: width.toDouble(),
       height: height.toDouble(),
       child: Container(
-        child: FadeInImage(
-          fadeInDuration: const Duration(milliseconds: 100),
-          key: Key(_tileCoordsToKey(coords)),
-          placeholder: options.placeholderImage != null
-              ? options.placeholderImage
-              : MemoryImage(kTransparentImage),
-          image: options.tileProvider.getImage(coords, options),
-          fit: BoxFit.fill,
-        ),
+        child: _getTileImage(coords),
       ),
     );
   }
@@ -541,7 +571,7 @@ abstract class TileProvider {
   }
 
   String getWmsBbox(int x, int y, int z) {
-    List<double> SW = util.xyzToWms(x, y+1, z);
+    List<double> SW = util.xyzToWms(x, y + 1, z);
     List<double> NE = util.xyzToWms(x + 1, y, z);
     return "${SW[1]},${SW[0]},${NE[1]},${NE[0]}";
   }
