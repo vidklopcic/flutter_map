@@ -9,8 +9,7 @@ import 'package:flutter_map/src/map/map.dart';
 import 'package:flutter_map/src/map/map_state_widget.dart';
 import 'package:positioned_tap_detector_2/positioned_tap_detector_2.dart';
 
-class FlutterMapState extends MapGestureMixin
-    with AutomaticKeepAliveClientMixin {
+class FlutterMapState extends MapGestureMixin with AutomaticKeepAliveClientMixin {
   final List<StreamGroup<void>> groups = <StreamGroup<void>>[];
   final _positionedTapController = PositionedTapController();
   MapController? _localController;
@@ -77,8 +76,7 @@ class FlutterMapState extends MapGestureMixin
   Widget build(BuildContext context) {
     _disposeStreamGroups();
     super.build(context);
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
       final hasLateSize = mapState.hasLateSize(constraints);
 
       mapState.setOriginalSize(constraints.maxWidth, constraints.maxHeight);
@@ -93,13 +91,10 @@ class FlutterMapState extends MapGestureMixin
 
       final scaleGestureTeam = GestureArenaTeam();
 
-      RawGestureDetector scaleGestureDetector({required Widget child}) =>
-          RawGestureDetector(
+      RawGestureDetector scaleGestureDetector({required Widget child}) => RawGestureDetector(
             gestures: <Type, GestureRecognizerFactory>{
-              ScaleGestureRecognizer:
-                  GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-                      () => ScaleGestureRecognizer(),
-                      (ScaleGestureRecognizer instance) {
+              ScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
+                  () => ScaleGestureRecognizer(), (ScaleGestureRecognizer instance) {
                 scaleGestureTeam.captain = instance;
                 instance.team ??= scaleGestureTeam;
                 instance
@@ -107,20 +102,14 @@ class FlutterMapState extends MapGestureMixin
                   ..onUpdate = handleScaleUpdate
                   ..onEnd = handleScaleEnd;
               }),
-              VerticalDragGestureRecognizer:
-                  GestureRecognizerFactoryWithHandlers<
-                          VerticalDragGestureRecognizer>(
-                      () => VerticalDragGestureRecognizer(),
-                      (VerticalDragGestureRecognizer instance) {
+              VerticalDragGestureRecognizer: GestureRecognizerFactoryWithHandlers<VerticalDragGestureRecognizer>(
+                  () => VerticalDragGestureRecognizer(), (VerticalDragGestureRecognizer instance) {
                 instance.team ??= scaleGestureTeam;
                 // these empty lambdas are necessary to activate this gesture recognizer
                 instance.onUpdate = (_) {};
               }),
-              HorizontalDragGestureRecognizer:
-                  GestureRecognizerFactoryWithHandlers<
-                          HorizontalDragGestureRecognizer>(
-                      () => HorizontalDragGestureRecognizer(),
-                      (HorizontalDragGestureRecognizer instance) {
+              HorizontalDragGestureRecognizer: GestureRecognizerFactoryWithHandlers<HorizontalDragGestureRecognizer>(
+                  () => HorizontalDragGestureRecognizer(), (HorizontalDragGestureRecognizer instance) {
                 instance.team ??= scaleGestureTeam;
                 instance.onUpdate = (_) {};
               })
@@ -141,23 +130,25 @@ class FlutterMapState extends MapGestureMixin
             onTap: handleTap,
             onLongPress: handleLongPress,
             onDoubleTap: handleDoubleTap,
-            child: options.allowPanningOnScrollingParent
-                ? GestureDetector(
-                    onTap: _positionedTapController.onTap,
-                    onLongPress: _positionedTapController.onLongPress,
-                    onTapDown: _positionedTapController.onTapDown,
-                    onTapUp: handleOnTapUp,
-                    child: scaleGestureDetector(child: _buildMap(size)),
-                  )
-                : GestureDetector(
-                    onScaleStart: handleScaleStart,
-                    onScaleUpdate: handleScaleUpdate,
-                    onScaleEnd: handleScaleEnd,
-                    onTap: _positionedTapController.onTap,
-                    onLongPress: _positionedTapController.onLongPress,
-                    onTapDown: _positionedTapController.onTapDown,
-                    onTapUp: handleOnTapUp,
-                    child: _buildMap(size)),
+            child: options.ignoreGestures
+                ? _buildMap(size)
+                : options.allowPanningOnScrollingParent
+                    ? GestureDetector(
+                        onTap: _positionedTapController.onTap,
+                        onLongPress: _positionedTapController.onLongPress,
+                        onTapDown: _positionedTapController.onTapDown,
+                        onTapUp: handleOnTapUp,
+                        child: scaleGestureDetector(child: _buildMap(size)),
+                      )
+                    : GestureDetector(
+                        onScaleStart: handleScaleStart,
+                        onScaleUpdate: handleScaleUpdate,
+                        onScaleEnd: handleScaleEnd,
+                        onTap: _positionedTapController.onTap,
+                        onLongPress: _positionedTapController.onLongPress,
+                        onTapDown: _positionedTapController.onTapDown,
+                        onTapUp: handleOnTapUp,
+                        child: _buildMap(size)),
           ),
         ),
       );
@@ -188,8 +179,7 @@ class FlutterMapState extends MapGestureMixin
           ),
           Stack(
             children: [
-              if (widget.nonRotatedChildren.isNotEmpty)
-                ...widget.nonRotatedChildren,
+              if (widget.nonRotatedChildren.isNotEmpty) ...widget.nonRotatedChildren,
               if (widget.nonRotatedLayers.isNotEmpty)
                 ...widget.nonRotatedLayers.map(
                   (layer) => _createLayer(layer, options.plugins),
@@ -208,8 +198,7 @@ class FlutterMapState extends MapGestureMixin
       }
     }
     if (options is TileLayerOptions) {
-      return TileLayer(
-          options: options, mapState: mapState, stream: _merge(options));
+      return TileLayer(options: options, mapState: mapState, stream: _merge(options));
     }
     if (options is MarkerLayerOptions) {
       return MarkerLayer(options, mapState, _merge(options));

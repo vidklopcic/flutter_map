@@ -201,6 +201,7 @@ class MapOptions {
   final Crs crs;
   final double zoom;
   final double rotation;
+  final bool ignoreGestures;
 
   /// Prints multi finger gesture winner Helps to fine adjust
   /// [rotationThreshold] and [pinchZoomThreshold] and [pinchMoveThreshold]
@@ -311,6 +312,7 @@ class MapOptions {
     this.boundsOptions = const FitBoundsOptions(),
     this.zoom = 13.0,
     this.rotation = 0.0,
+    this.ignoreGestures = false,
     this.debugMultiFingerGestureWinner = false,
     this.enableMultiFingerGestureRace = false,
     this.rotationThreshold = 20.0,
