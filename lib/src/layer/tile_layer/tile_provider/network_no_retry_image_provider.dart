@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
+import 'dart:ui' as ui;
 import 'package:flutter/painting.dart';
 
 class FMNetworkNoRetryImageProvider
@@ -27,7 +28,7 @@ class FMNetworkNoRetryImageProvider
   @override
   ImageStreamCompleter load(
     FMNetworkNoRetryImageProvider key,
-    DecoderCallback decode,
+    Future<ui.Codec> Function(Uint8List) decode,
   ) {
     //ignore: close_sinks
     final StreamController<ImageChunkEvent> chunkEvents =
@@ -53,7 +54,7 @@ class FMNetworkNoRetryImageProvider
 
   Future<Codec> _loadAsync({
     required FMNetworkNoRetryImageProvider key,
-    required DecoderCallback decode,
+    required Future<ui.Codec> Function(Uint8List) decode,
     required StreamController<ImageChunkEvent> chunkEvents,
   }) async {
     try {
